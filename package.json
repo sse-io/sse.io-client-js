@@ -1,0 +1,19 @@
+{
+  "name": "sse-io-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sse"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tslint": "^5.20.1",
+    "tslint-config-airbnb": "^5.11.2",
+    "typescript": "^3.7.2"
+  }
+}
