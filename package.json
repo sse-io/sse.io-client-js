@@ -1,7 +1,7 @@
 {
   "name": "sse-io-client",
   "version": "1.0.0",
-  "description": "",
+  "description": "JavaScript Client For SSE-IO",
   "main": "lib/index.js",
   "scripts": {
     "test": "jest --coverage --forceExit --detectOpenHandles"
@@ -36,7 +36,7 @@
     "eventemitter3": "^4.0.0",
     "lodash.assign": "^4.2.0",
     "query-string": "^6.8.3",
-    "shimo-eventsource": "^2.5.1",
+    "shimo-eventsource": "^2.6.0",
     "uuid": "^3.3.3"
   },
   "jest": {

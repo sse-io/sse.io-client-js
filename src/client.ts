@@ -148,9 +148,6 @@ export default class Client extends EventEmitter implements IClient {
       return;
     }
     // should reconnect when receive 5xx http status
-    // if (status[0] === '5' && this.reconnect) {
-    //   this.delayPull(status);
-    // }
     this.reconnect && this.delayPull(status);
   }
 

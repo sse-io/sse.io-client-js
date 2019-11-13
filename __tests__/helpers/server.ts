@@ -11,10 +11,10 @@ const Bluebird = require('bluebird');
 function getEventData (stream: PassThrough, event: string, cb: () => void) {
   const responseData = EVENT_DATA[event];
   if (!responseData) {
+    stream.write(`event: ${event}\ndata: \n\n`);
     setTimeout(() => {
-      stream.write(`event: ${event}\ndata: \n\n`);
       cb();
-    }, 1000)
+    }, 0)
   } else {
     setTimeout(async () => {
       let index = 0;
@@ -83,4 +83,4 @@ export function startServer() {
     .use(router.routes())
     .use(router.allowedMethods())
     .listen(PORT);
-}
+};

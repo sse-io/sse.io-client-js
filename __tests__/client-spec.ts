@@ -9,7 +9,7 @@ function newClient(events: string[]) {
 }
 
 describe('sse-io client', () => {
-  test('should get message from server', async () => {
+  test('should get response from single event', async () => {
     const event = EVENTS.TEST_NORMAL;
     const client = newClient([event]);
     const promise = new Promise((resolve) => {
@@ -27,11 +27,12 @@ describe('sse-io client', () => {
       })
     })
     
-    client.start()
-    await promise.then(() => client.stop());
+    client.start();
+    await promise;
+    client.stop();
   })
 
-  test('should return 4xx or 5xx http status', async () => {
+  test('should emit error event when receive 4xx or 5xx http status', async () => {
     const event = EVENTS.TEST_NORMAL;
     const client = newClient([event]);
     const badHttpStatus = [400, 401, 403, 500, 503];
@@ -49,7 +50,8 @@ describe('sse-io client', () => {
         resStatus: status
       }
     });
-    await promise.then(() => client.stop());
+    await promise;
+    client.stop();
   })
 
   test('should auto reconnect when receive 5xx http status', async () => {
@@ -75,7 +77,8 @@ describe('sse-io client', () => {
         resStatus: status
       }
     });
-    await promise.then(() => client.stop());
+    await promise;
+    client.stop();
   })
 
   test('should auto reconnect when server close connection', async () => {
@@ -91,7 +94,8 @@ describe('sse-io client', () => {
     })
     
     client.start()
-    await promise.then(() => client.stop());
+    await promise;
+    client.stop();
   })
 
   test('should get response from multiple events', async () => {
@@ -118,8 +122,10 @@ describe('sse-io client', () => {
     })
     
     client.start()
-    await promise.then(() => client.stop());
+    await promise;
+    client.stop();
   })
+
   test('should set headers works fine', async () => {})
   test('should not auto reconnect when options.reconnect = false', async () => {})
   test('should not reconnect when client is closed', async () => {})
