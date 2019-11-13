@@ -28,8 +28,7 @@ describe('sse-io client', () => {
     })
     
     client.start()
-    await promise;
-    client.stop();
+    await promise.then(() => client.stop());
   })
 
   test('should return 4xx or 5xx http status', async () => {
@@ -50,7 +49,7 @@ describe('sse-io client', () => {
         resStatus: status
       }
     });
-    await promise;
+    await promise.then(() => client.stop());
   })
 
   test('should auto reconnect when receive 5xx http status', async () => {
@@ -76,7 +75,7 @@ describe('sse-io client', () => {
         resStatus: status
       }
     });
-    await promise;
+    await promise.then(() => client.stop());
   })
 
   test('should auto reconnect when server close connection', async () => {
@@ -92,7 +91,7 @@ describe('sse-io client', () => {
     })
     
     client.start()
-    await promise;
+    await promise.then(() => client.stop());
   })
 
   test('should get response from multiple events', async () => {
@@ -119,7 +118,7 @@ describe('sse-io client', () => {
     })
     
     client.start()
-    await promise;
+    await promise.then(() => client.stop());
   })
   test('should set headers works fine', async () => {})
   test('should not auto reconnect when options.reconnect = false', async () => {})
