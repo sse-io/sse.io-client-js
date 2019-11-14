@@ -4,8 +4,8 @@ import { EVENTS, EVENT_DATA } from './helpers/mock_data';
 
 const Bluebird = require('bluebird');
 
-function newClient(events: string[]) {
-  return new Client(BASE_URL + '/files/guid/pull', events);
+function newClient(events: string[], options?: any) {
+  return new Client(BASE_URL + '/files/guid/pull', events, options);
 }
 
 describe('sse-io client', () => {
@@ -126,7 +126,42 @@ describe('sse-io client', () => {
     client.stop();
   })
 
-  test('should set headers works fine', async () => {})
-  test('should not auto reconnect when options.reconnect = false', async () => {})
-  test('should not reconnect when client is closed', async () => {})
+  test('should not auto reconnect when options.reconnect = false', async () => {
+    const client = newClient(['nodata-event'], { reconnect: false });
+    let index = 0;
+    const promise = new Promise(async (resolve) => {
+      let flag = false;
+      client.onMessage((data) => {
+        index++;
+        flag = true;
+      })
+
+      // wait to see if client reconnected and received more messages
+      await Bluebird.delay(3000);
+      flag && resolve();
+    })
+    
+    client.start();
+    await promise;
+    expect(index).toBe(1);
+    client.stop();
+  })
+
+  test('should not reconnect when client is closed', async () => {
+    const client = newClient(['nodata-event']);
+    let index = 0;
+    const promise = new Promise(async (resolve) => {
+      client.onMessage(() => {
+        index++;
+        resolve();
+      })
+    })
+    
+    client.start();
+    await promise;
+    client.stop();
+
+    await Bluebird.delay(3000);
+    expect(index).toBe(1);
+  })
 })
