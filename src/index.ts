@@ -1,4 +1,7 @@
 import Client from './client';
-export default Client;
+import { IOptions, ISSEOptions, ClientError } from './IClient';
 
-export * from './IClient';
+export function newClient(url: string, events: string[], options?: IOptions) {
+  return new Client(url, events, options);
+}
+export { IOptions, ISSEOptions, ClientError };
