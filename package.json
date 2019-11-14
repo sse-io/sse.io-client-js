@@ -1,6 +1,6 @@
 {
   "name": "sse.io-client",
-  "version": "1.0.0",
+  "version": "1.0.0-beta1.0",
   "description": "JavaScript Client For SSE-IO",
   "main": "lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "clean": "rimraf lib && rimraf coverage",
     "format": "prettier --write \"{src,__tests__}/**/*.ts\" --single-quote --trailing-comma es5",
     "lint": "tslint --force --format verbose \"{src,__tests__}/**/*.ts\"",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run build && npm run release-dev && npm run release",
     "prebuild": "npm run clean && npm run format && npm run lint && echo Using TypeScript && tsc --version",
     "build": "tsc --pretty",
     "release-dev": "webpack --config webpack.config.dev.js",
@@ -18,7 +18,8 @@
     "sse"
   ],
   "files": [
-    "lib"
+    "lib",
+    "dist"
   ],
   "author": "nEoYe",
   "license": "ISC",
