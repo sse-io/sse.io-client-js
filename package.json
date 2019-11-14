@@ -1,5 +1,5 @@
 {
-  "name": "sse-io-client",
+  "name": "sse.io-client",
   "version": "1.0.0",
   "description": "JavaScript Client For SSE-IO",
   "main": "lib/index.js",
@@ -10,7 +10,9 @@
     "lint": "tslint --force --format verbose \"{src,__tests__}/**/*.ts\"",
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean && npm run format && npm run lint && echo Using TypeScript && tsc --version",
-    "build": "tsc --pretty"
+    "build": "tsc --pretty",
+    "release-dev": "webpack --config webpack.config.dev.js",
+    "release": "webpack --config webpack.config.js"
   },
   "keywords": [
     "sse"
@@ -21,6 +23,8 @@
   "author": "nEoYe",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
     "@types/backo2": "^1.0.1",
     "@types/debug": "^4.1.5",
     "@types/jest": "^24.0.22",
@@ -28,6 +32,7 @@
     "@types/koa-router": "^7.0.42",
     "@types/lodash.assign": "^4.2.6",
     "@types/uuid": "^3.4.6",
+    "babel-loader": "^8.0.6",
     "bluebird": "^3.7.1",
     "jest": "^24.9.0",
     "koa": "^2.11.0",
@@ -35,11 +40,15 @@
     "koa-router": "^7.4.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
+    "terser-webpack-plugin": "^2.2.1",
     "ts-jest": "^24.1.0",
     "ts-node": "^8.5.0",
     "tslint": "^5.20.1",
     "tslint-config-airbnb": "^5.11.2",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-merge": "^4.2.2"
   },
   "dependencies": {
     "backo2": "^1.0.2",
