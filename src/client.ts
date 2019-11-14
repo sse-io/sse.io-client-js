@@ -43,8 +43,8 @@ export default class Client extends EventEmitter implements IClient {
     this.clientId = uuid.v4().toString();
 
     if (options) {
-      if (options.reconnect) {
-        this.reconnect = options.reconnect;
+      if (options.hasOwnProperty('reconnect')) {
+        this.reconnect = !!options.reconnect;
       }
     }
 
