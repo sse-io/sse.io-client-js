@@ -1,18 +1,18 @@
-export type messageCb = (data: {event: string, message: string}) => void;
+export type messageCb = (data: { event: string; message: string }) => void;
 export type errorCb = (err: Error) => void;
 
 export type IOptions = {
-  reconnect?: boolean,
-  backoffOptions?: any,
+  reconnect?: boolean;
+  backoffOptions?: any;
 };
 
 export type ISSEOptions = {
-  headers?: Object,
-  proxy?: string,
-  https?: Object,
-  withCredentials?: Boolean,
-  forceXhr?: Boolean,
-  queryParams?: Object,
+  headers?: Object;
+  proxy?: string;
+  https?: Object;
+  withCredentials?: Boolean;
+  forceXhr?: Boolean;
+  queryParams?: Object;
 };
 
 export default interface IClient {

@@ -10,5 +10,5 @@ declare class ShimoEventSource {
 }
 
 declare module 'shimo-eventsource' {
-  export = ShimoEventSource
+  export = ShimoEventSource;
 }

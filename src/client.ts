@@ -7,7 +7,13 @@ import EventSource = require('shimo-eventsource');
 import lodashAssign = require('lodash.assign');
 import Backoff = require('backo2');
 
-import IClient, { IOptions, ISSEOptions, messageCb, errorCb, ClientError } from './IClient';
+import IClient, {
+  IOptions,
+  ISSEOptions,
+  messageCb,
+  errorCb,
+  ClientError,
+} from './IClient';
 
 const debug = _debug('sse-io-client');
 
@@ -49,7 +55,7 @@ export default class Client extends EventEmitter implements IClient {
     }
 
     this.backoff = new Backoff(
-      lodashAssign(DEFAULT_BACKOFF_OPTIONS, options && options.backoffOptions),
+      lodashAssign(DEFAULT_BACKOFF_OPTIONS, options && options.backoffOptions)
     );
   }
 
@@ -81,21 +87,24 @@ export default class Client extends EventEmitter implements IClient {
       return;
     }
     const url = this.genEventSourceUrl();
-    const eventSource: EventSource = (this.eventSource = new EventSource(url, this.sseOptions));
+    const eventSource: EventSource = (this.eventSource = new EventSource(
+      url,
+      this.sseOptions
+    ));
 
     for (const event of this.events) {
       eventSource.addEventListener(event, (e: any) => {
         this.emit(EVENT.MESSAGE, {
           event,
-          message: e.data
+          message: e.data,
         });
       });
     }
 
-    eventSource.onerror = error => {
+    eventSource.onerror = (error: any) => {
       this.onEventSourceErrorOrClose(error);
-    }
-    eventSource.addEventListener('close', error => {
+    };
+    eventSource.addEventListener('close', (error: any) => {
       this.onEventSourceErrorOrClose(error);
     });
   }
@@ -110,7 +119,7 @@ export default class Client extends EventEmitter implements IClient {
         clientId: this.clientId,
         events: this.events,
       },
-      this.sseOptions && this.sseOptions.queryParams,
+      this.sseOptions && this.sseOptions.queryParams
     );
 
     return `${baseUrl}?${qs.stringify(parsed)}`;
@@ -136,14 +145,17 @@ export default class Client extends EventEmitter implements IClient {
       this.delayPull(status);
       return;
     }
-    
+
     if (status[0] === '2') {
       this.backoff.reset();
       this.reconnect && this.pull();
       return;
     }
 
-    this.emit(EVENT.ERROR, new ClientError(error.message, 'http error', error.status));
+    this.emit(
+      EVENT.ERROR,
+      new ClientError(error.message, 'http error', error.status)
+    );
     if (status[0] === '4') {
       return;
     }
