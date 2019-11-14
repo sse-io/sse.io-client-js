@@ -11,6 +11,9 @@
         ],
         "import-name": false,
         "no-increment-decrement": false,
+        "align": false,
+        "ter-arrow-parens": false,
+        "trailing-comma": false
     },
     "rulesDirectory": []
 }
