@@ -4,12 +4,21 @@
   "description": "JavaScript Client For SSE-IO",
   "main": "lib/index.js",
   "scripts": {
-    "test": "jest --coverage --forceExit --detectOpenHandles"
+    "test": "jest --coverage --forceExit --detectOpenHandles",
+    "clean": "rimraf lib && rimraf coverage",
+    "format": "prettier --write \"{src,__tests__}/**/*.ts\" --single-quote --trailing-comma es5",
+    "lint": "tslint --force --format verbose \"{src,__tests__}/**/*.ts\"",
+    "prepublishOnly": "npm run build",
+    "prebuild": "npm run clean && npm run format && npm run lint && echo Using TypeScript && tsc --version",
+    "build": "tsc --pretty"
   },
   "keywords": [
     "sse"
   ],
-  "author": "",
+  "files": [
+    "lib"
+  ],
+  "author": "nEoYe",
   "license": "ISC",
   "devDependencies": {
     "@types/backo2": "^1.0.1",
@@ -24,6 +33,8 @@
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-router": "^7.4.0",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
     "ts-jest": "^24.1.0",
     "ts-node": "^8.5.0",
     "tslint": "^5.20.1",
