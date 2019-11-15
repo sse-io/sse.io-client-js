@@ -5,7 +5,7 @@ You can use it with Node.js or as a browser polyfill for browsers that don't hav
 
 ## How to use
 
-you can serve the file `sse.io-client.js` found in the `dist` folder or include it via [CDN](https://www.jsdelivr.com/package/npm/sse.io-client?tab=collection)
+You can serve the file `sse.io-client.js` found in the `dist` folder or include it via [CDN](https://unpkg.com/sse.io-client@1.0.0/dist/sse.io-client.js)
 
 ```html
 <script src="/dist/sse.io-client.js"></script>
@@ -21,6 +21,7 @@ you can serve the file `sse.io-client.js` found in the `dist` folder or include 
 </script>
 ```
 
+Import using ES6
 ```js
 import sseio from 'sse.io-client';
 
