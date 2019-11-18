@@ -41,7 +41,7 @@ const client = sseio.client('http://localhost', ['event']);
  - `options` _(Object, Optional)_
     - `reconnect` _(Boolean)_ (default to `true`) should auto reconnect when server close the connection or receive 5xx http status.
     - `backoffOptions` _(Object)_ [implements from backo](https://github.com/mokesmokes/backo#options)
-  - **Returns** `Client`
+ - **Returns** `Client`
 
 ### Client
 
@@ -57,9 +57,13 @@ const client = sseio.client('http://localhost', ['event']);
 
 Creates a new EventSource, establishing the SSE connection, and register listeners for the `events`.
 
-#### client.close()
+#### client.restart()
 
-Close the EventSource
+Equals to `client.stop() && client.start()`, using the latest options.
+
+#### client.stop()
+
+Close the EventSource, as well as closing the SSE connection.
 
 #### client.onMessage(callback)
 
@@ -67,7 +71,7 @@ Close the EventSource
     - `data.event` _(String)_
     - `data.message` _(String)_
 
-Handle received message for registered events from server
+Handle received message for registered events from server.
 
 #### client.onError(callback)
 
@@ -76,4 +80,16 @@ Handle received message for registered events from server
     - `error.status` _(Number)_ (default to -1) the http status received from server
     - `error.reason` _(String)_ possible values: 'client offline', 'http error'
 
-Handle error message
+Handle error message.
+
+#### client.setQueryParams(params)
+
+ - `params` _(Object)_ your custom query parameters
+
+Set the query params for SSE request. It will be passed to the server when the SSE connection is established next time.
+
+#### client.isConnected()
+
+ - **Returns** _(Boolean)_
+
+Whether or not The SSE connection is connected to the server.
