@@ -47,6 +47,7 @@ export function startServer() {
       events[0] = ctx.request.query.events;
     }
 
+    // set http status when receive resStatus in request query params
     const { resStatus } = ctx.request.query;
     if (resStatus && !isNaN(resStatus)) {
       ctx.res.writeHead(Number(resStatus), {

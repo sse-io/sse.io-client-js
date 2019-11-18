@@ -169,4 +169,51 @@ describe('sse-io client', () => {
     await bluebird.delay(3000);
     expect(index).toBe(1);
   });
+
+  test('should reconnect when client restart', async () => {
+    const client = newClient(['nodata-event'], { reconnect: false });
+    let index = 0;
+    client.onMessage(data => {
+      index++;
+    });
+
+    client.start();
+
+    // wait client to close
+    const promise = new Promise(async resolve => {
+      setInterval(() => {
+        !client.isConnected() && resolve();
+      }, 500);
+    });
+    await promise;
+
+    client.restart();
+    expect(client.isConnected()).toBe(true);
+    // wait new message
+    await bluebird.delay(1000);
+    expect(index).toBeGreaterThan(1);
+    client.stop();
+  });
+
+  test('should request set query params when exec client.setQueryParams()', async () => {
+    const event = EVENTS.TEST_NORMAL;
+    const client = newClient([event]);
+    const badHttpStatus = [400, 401, 403, 500, 503];
+    const status =
+      badHttpStatus[Math.floor(Math.random() * badHttpStatus.length)];
+
+    const promise = new Promise(resolve => {
+      client.onError((err: any) => {
+        expect(err.status).toBe(status);
+        resolve();
+      });
+    });
+
+    client.setQueryParams({
+      resStatus: status,
+    });
+    client.start();
+    await promise;
+    client.stop();
+  });
 });
