@@ -23,7 +23,7 @@ You can serve the file `sse.io-client.js` found in the `dist` folder or include 
 
 Import using ES6
 ```js
-import sseio from 'sse.io-client';
+import * as sseio from 'sse.io-client';
 
 const client = sseio.client('http://localhost', ['event']);
 ```
