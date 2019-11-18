@@ -20,6 +20,12 @@ export default interface IClient {
 
   stop(): any;
 
+  restart(): any;
+
+  isConnected(): boolean;
+
+  setQueryParams(params: Object): any;
+
   onMessage(cb: messageCb): any;
 
   onError(cb: errorCb): any;

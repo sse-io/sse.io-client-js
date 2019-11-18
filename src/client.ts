@@ -41,6 +41,7 @@ export default class Client extends EventEmitter implements IClient {
   // auto reconnect
   private reconnect: boolean = true;
   private stopped: boolean = false;
+  private connected: boolean = false;
 
   constructor(url: string, events: string[], options?: IOptions) {
     super();
@@ -61,7 +62,9 @@ export default class Client extends EventEmitter implements IClient {
 
   public start(options?: ISSEOptions) {
     this.stopped = false;
-    this.sseOptions = options;
+    if (options) {
+      this.sseOptions = options;
+    }
     this.pull();
   }
 
@@ -80,6 +83,19 @@ export default class Client extends EventEmitter implements IClient {
 
   public onError(cb: errorCb) {
     this.on(EVENT.ERROR, cb);
+  }
+
+  public setQueryParams(params: Object) {
+    this.sseOptions = lodashAssign(this.sseOptions, { queryParams: params });
+  }
+
+  public restart(): void {
+    this.stop();
+    this.start();
+  }
+
+  public isConnected(): boolean {
+    return this.connected;
   }
 
   private pull() {
@@ -107,6 +123,8 @@ export default class Client extends EventEmitter implements IClient {
     eventSource.addEventListener('close', (error: any) => {
       this.onEventSourceErrorOrClose(error);
     });
+
+    this.connected = true;
   }
 
   private genEventSourceUrl() {
@@ -126,6 +144,8 @@ export default class Client extends EventEmitter implements IClient {
   }
 
   private onEventSourceErrorOrClose(error: any) {
+    this.connected = false;
+
     if (this.eventSource) {
       try {
         this.eventSource.close();
