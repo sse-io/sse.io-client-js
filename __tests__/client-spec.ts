@@ -1,4 +1,4 @@
-import Client from '../src/client';
+import Client, { EVENTS as CEVENTS } from '../src/client';
 import { BASE_URL } from './helpers/constants';
 import { EVENTS, EVENT_DATA } from './helpers/mock_data';
 
@@ -12,20 +12,7 @@ describe('sse-io client', () => {
   test('should get response from single event', async () => {
     const event = EVENTS.TEST_NORMAL;
     const client = newClient([event]);
-    const promise = new Promise(resolve => {
-      let index = 0;
-      const message = EVENT_DATA[event];
-      client.onMessage(data => {
-        expect(data.event).toBe(event);
-        expect(data.message).toBe(JSON.stringify(message[index]));
-        index++;
-
-        if (message.length === index) {
-          resolve();
-          return;
-        }
-      });
-    });
+    const promise = newEventPromise(client, event);
 
     client.start();
     await promise;
@@ -40,7 +27,7 @@ describe('sse-io client', () => {
       badHttpStatus[Math.floor(Math.random() * badHttpStatus.length)];
 
     const promise = new Promise(resolve => {
-      client.onError((err: any) => {
+      client.on(CEVENTS.ERROR, (err: any) => {
         expect(err.status).toBe(status);
         resolve();
       });
@@ -64,7 +51,7 @@ describe('sse-io client', () => {
 
     const promise = new Promise(resolve => {
       let count = 0;
-      client.onError((err: any) => {
+      client.on(CEVENTS.ERROR, (err: any) => {
         expect(err.status).toBe(status);
 
         if (count > 2) {
@@ -87,7 +74,7 @@ describe('sse-io client', () => {
     const client = newClient(['nodata-event']);
     const promise = new Promise(resolve => {
       let index = 0;
-      client.onMessage(() => {
+      client.on(CEVENTS.MESSAGE, () => {
         if (index > 2) {
           resolve();
         }
@@ -103,28 +90,7 @@ describe('sse-io client', () => {
   test('should get response from multiple events', async () => {
     const events = [EVENTS.TEST_MULTIPLE_1, EVENTS.TEST_MULTIPLE_2];
     const client = newClient(events);
-    const promise = new Promise(resolve => {
-      const eventIndex: any = {};
-      eventIndex[EVENTS.TEST_MULTIPLE_1] = 0;
-      eventIndex[EVENTS.TEST_MULTIPLE_2] = 0;
-      client.onMessage(data => {
-        expect(events.includes(data.event)).toBeTruthy();
-        const message = EVENT_DATA[data.event];
-        expect(data.message).toBe(
-          JSON.stringify(message[eventIndex[data.event]])
-        );
-        eventIndex[data.event]++;
-
-        let eventsMessageDone = true;
-        for (const event of events) {
-          eventsMessageDone =
-            EVENT_DATA[event].length === eventIndex[data.event];
-        }
-        if (eventsMessageDone) {
-          resolve();
-        }
-      });
-    });
+    const promise = newMultipleEventsPromise(client, events);
 
     client.start();
     await promise;
@@ -136,7 +102,7 @@ describe('sse-io client', () => {
     let index = 0;
     const promise = new Promise(async resolve => {
       let flag = false;
-      client.onMessage(data => {
+      client.on(CEVENTS.MESSAGE, data => {
         index++;
         flag = true;
       });
@@ -156,7 +122,7 @@ describe('sse-io client', () => {
     const client = newClient(['nodata-event']);
     let index = 0;
     const promise = new Promise(async resolve => {
-      client.onMessage(() => {
+      client.on(CEVENTS.MESSAGE, () => {
         index++;
         resolve();
       });
@@ -173,7 +139,7 @@ describe('sse-io client', () => {
   test('should reconnect when client restart', async () => {
     const client = newClient(['nodata-event'], { reconnect: false });
     let index = 0;
-    client.onMessage(data => {
+    client.on(CEVENTS.MESSAGE, data => {
       index++;
     });
 
@@ -203,17 +169,120 @@ describe('sse-io client', () => {
       badHttpStatus[Math.floor(Math.random() * badHttpStatus.length)];
 
     const promise = new Promise(resolve => {
-      client.onError((err: any) => {
+      client.on(CEVENTS.ERROR, (err: any) => {
         expect(err.status).toBe(status);
         resolve();
       });
     });
 
-    client.setQueryParams({
+    client.addQueryParams({
       resStatus: status,
+    });
+    const params = client.addQueryParams({
+      otherParams: 'foo',
+    });
+    expect(params).toStrictEqual({
+      resStatus: status,
+      otherParams: 'foo',
     });
     client.start();
     await promise;
     client.stop();
   });
+
+  test('should get response from multiple events after add event', async () => {
+    const client = newClient([EVENTS.TEST_MULTIPLE_1]);
+    client.start();
+
+    await bluebird.delay(100);
+    client.addEvent(EVENTS.TEST_MULTIPLE_2);
+
+    // wait client reconnect
+    await new Promise((resolve, reject) => {
+      client.on(CEVENTS.CONNECTED, resolve);
+    });
+
+    const promise = newMultipleEventsPromise(client, [
+      EVENTS.TEST_MULTIPLE_1,
+      EVENTS.TEST_MULTIPLE_2,
+    ]);
+    await promise;
+    client.stop();
+  });
+
+  test('should get response from single event after remove event', async () => {
+    const events = [EVENTS.TEST_MULTIPLE_1, EVENTS.TEST_MULTIPLE_2];
+    const client = newClient(events);
+    client.start();
+
+    await bluebird.delay(100);
+    client.removeEvent(EVENTS.TEST_MULTIPLE_1);
+
+    // wait client reconnect
+    await new Promise((resolve, reject) => {
+      client.on(CEVENTS.CONNECTED, resolve);
+    });
+
+    const promise = newEventPromise(client, EVENTS.TEST_MULTIPLE_2);
+    await promise;
+    client.stop();
+  });
+
+  test.skip('should only restart once when add multiple events continuously', async () => {
+    const client = newClient(['nodata-event']);
+    client.start();
+
+    client.addEvent('event1');
+    client.addEvent('event2');
+    client.addEvent('event3');
+
+    let count = 0;
+    client.on(CEVENTS.CONNECTED, () => {
+      count++;
+    });
+    // wait the three "addEvent" done
+    await bluebird.delay(1000);
+    expect(count).toBe(1);
+  });
 });
+
+function newMultipleEventsPromise(client: Client, events: string[]) {
+  return new Promise(resolve => {
+    const eventIndex: any = {};
+    eventIndex[EVENTS.TEST_MULTIPLE_1] = 0;
+    eventIndex[EVENTS.TEST_MULTIPLE_2] = 0;
+    client.on(CEVENTS.MESSAGE, data => {
+      expect(events.includes(data.event)).toBeTruthy();
+      const message = EVENT_DATA[data.event];
+      expect(data.message).toBe(
+        JSON.stringify(message[eventIndex[data.event]])
+      );
+      eventIndex[data.event]++;
+
+      let eventsMessageDone = true;
+      for (const event of events) {
+        eventsMessageDone = EVENT_DATA[event].length === eventIndex[data.event];
+      }
+      if (eventsMessageDone) {
+        resolve();
+      }
+    });
+  });
+}
+
+function newEventPromise(client: Client, event: string) {
+  return new Promise(resolve => {
+    let index = 0;
+    const message = EVENT_DATA[event];
+    client.on(CEVENTS.MESSAGE, data => {
+      expect(data.event).toBe(event);
+      expect(data.message).toBe(JSON.stringify(message[index]));
+      index++;
+
+      if (message.length === index) {
+        resolve();
+        return;
+      }
+    });
+  });
+}
