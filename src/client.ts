@@ -212,10 +212,10 @@ export default class Client extends EventEmitter implements IClient {
       EVENTS.ERROR,
       new ClientError(error.message, 'http error', error.status)
     );
-    if (status[0] === '4') {
+    if (status[0] === '4' && error.status !== 429) {
       return;
     }
-    // should reconnect when receive 5xx http status
+    // should reconnect when receive 429 or 5xx http status
     this.reconnect && this.delayPull(status);
   }
 
