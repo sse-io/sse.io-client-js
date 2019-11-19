@@ -9,6 +9,11 @@ import { PORT } from './constants';
 const bluebird = require('bluebird');
 
 function getEventData(stream: PassThrough, event: string, cb: () => void) {
+  let streamClosed = false;
+  stream.on('close', () => {
+    streamClosed = true;
+  });
+
   const responseData = EVENT_DATA[event];
   if (!responseData) {
     stream.write(`event: ${event}\ndata: \n\n`);
@@ -22,11 +27,14 @@ function getEventData(stream: PassThrough, event: string, cb: () => void) {
         if (!responseData[index]) {
           break;
         }
+        if (streamClosed) {
+          break;
+        }
         stream.write(
           `event: ${event}\ndata: ${JSON.stringify(responseData[index])}\n\n`
         );
         index++;
-        await bluebird.delay(1000);
+        await bluebird.delay(100);
       }
       cb();
     }, 0);

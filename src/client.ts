@@ -7,20 +7,16 @@ import EventSource = require('shimo-eventsource');
 import lodashAssign = require('lodash.assign');
 import Backoff = require('backo2');
 
-import IClient, {
-  IOptions,
-  ISSEOptions,
-  messageCb,
-  errorCb,
-  ClientError,
-} from './IClient';
+import { isObject, debounce } from './helpers';
+
+import IClient, { IOptions, ISSEOptions, ClientError } from './IClient';
 
 const debug = _debug('sse-io-client');
 
-const EVENT = {
+export const EVENTS = {
   MESSAGE: 'message',
   ERROR: 'error',
-  OFFLINE: 'offline',
+  CONNECTED: 'connected',
   DISCONNECT: 'disconnect',
 };
 
@@ -74,19 +70,54 @@ export default class Client extends EventEmitter implements IClient {
         this.eventSource.close();
       }
       this.stopped = true;
+      this.emit(EVENTS.DISCONNECT);
     }
   }
 
-  public onMessage(cb: messageCb) {
-    this.on(EVENT.MESSAGE, cb);
+  public addEvent(event: string, params?: Object) {
+    if (this.events.length > 0 && !this.events.includes(event)) {
+      this.events.push(event);
+    }
+
+    if (params) {
+      this.addQueryParams(params);
+    }
+
+    debounce(() => this.restart, 100);
   }
 
-  public onError(cb: errorCb) {
-    this.on(EVENT.ERROR, cb);
+  public removeEvent(event: string, params?: Object) {
+    if (this.events.length > 0) {
+      const idx = this.events.indexOf(event);
+      if (idx > -1) {
+        this.events.splice(idx, 1);
+      }
+    }
+
+    if (params) {
+      this.addQueryParams(params);
+    }
+
+    debounce(() => this.restart, 100);
   }
 
-  public setQueryParams(params: Object) {
-    this.sseOptions = lodashAssign(this.sseOptions, { queryParams: params });
+  public addQueryParams(params: Object): any {
+    if (!isObject(params)) {
+      throw new Error('params should be an object!');
+    }
+
+    if (this.sseOptions) {
+      this.sseOptions.queryParams = lodashAssign(
+        this.sseOptions.queryParams,
+        params
+      );
+    } else {
+      this.sseOptions = {
+        queryParams: params,
+      };
+    }
+
+    return this.sseOptions.queryParams;
   }
 
   public restart(): void {
@@ -110,7 +141,7 @@ export default class Client extends EventEmitter implements IClient {
 
     for (const event of this.events) {
       eventSource.addEventListener(event, (e: any) => {
-        this.emit(EVENT.MESSAGE, {
+        this.emit(EVENTS.MESSAGE, {
           event,
           message: e.data,
         });
@@ -125,6 +156,7 @@ export default class Client extends EventEmitter implements IClient {
     });
 
     this.connected = true;
+    this.emit(EVENTS.CONNECTED);
   }
 
   private genEventSourceUrl() {
@@ -145,6 +177,7 @@ export default class Client extends EventEmitter implements IClient {
 
   private onEventSourceErrorOrClose(error: any) {
     this.connected = false;
+    this.emit(EVENTS.DISCONNECT);
 
     if (this.eventSource) {
       try {
@@ -161,7 +194,10 @@ export default class Client extends EventEmitter implements IClient {
     const status = String(error.status);
     // offline
     if (status === '' || status === '0') {
-      this.emit(EVENT.ERROR, new ClientError(error.message, 'client offline'));
+      this.emit(
+        EVENTS.ERROR,
+        new ClientError(error.message, `can't connect to server`)
+      );
       this.delayPull(status);
       return;
     }
@@ -173,7 +209,7 @@ export default class Client extends EventEmitter implements IClient {
     }
 
     this.emit(
-      EVENT.ERROR,
+      EVENTS.ERROR,
       new ClientError(error.message, 'http error', error.status)
     );
     if (status[0] === '4') {

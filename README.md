@@ -37,10 +37,10 @@ const client = sseio.client('http://localhost', ['event']);
 #### client(url, events, options)
 
  - `url` _(String, Required)_ url path for SSE connection.
- - `events` _(String, Required)_ the `EventSource` created by client will addEventListener to the events. Also, it will be add to query params to the SSE request.
+ - `events` _(Array[String], Required)_ the `EventSource` created by client will addEventListener to the events. Also, it will be add to query params to the SSE http request.
  - `options` _(Object, Optional)_
-    - `reconnect` _(Boolean)_ (default to `true`) should auto reconnect when server close the connection or receive 5xx http status.
-    - `backoffOptions` _(Object)_ [implements from backo](https://github.com/mokesmokes/backo#options)
+    - `reconnect` _(Boolean)_ (default to `true`) client will auto reconnect when can't connect to server, connections closed by server or receiving 5xx http status.
+    - `backoffOptions` _(Object)_ [implements from backo](https://github.com/mokesmokes/backo#options). Client will delay reconnect when receiving 5xx http status or can't connect to server.
  - **Returns** `Client`
 
 ### Client
@@ -57,39 +57,76 @@ const client = sseio.client('http://localhost', ['event']);
 
 Creates a new EventSource, establishing the SSE connection, and register listeners for the `events`.
 
-#### client.restart()
-
-Equals to `client.stop() && client.start()`, using the latest options.
-
 #### client.stop()
 
 Close the EventSource, as well as closing the SSE connection.
 
-#### client.onMessage(callback)
+#### client.restart()
 
- - `callback` _(Function)_ an Object `data` will be passed to the callback function
-    - `data.event` _(String)_
-    - `data.message` _(String)_
+Equals to `client.stop() && client.start()`, using the latest options.
 
-Handle received message for registered events from server.
-
-#### client.onError(callback)
-
- - `callback` _(Function)_ an `Error` will be passed to the callback function
-    - `error.message` _(String)_
-    - `error.status` _(Number)_ (default to -1) the http status received from server
-    - `error.reason` _(String)_ possible values: 'client offline', 'http error'
-
-Handle error message.
-
-#### client.setQueryParams(params)
+#### client.addQueryParams(params)
 
  - `params` _(Object)_ your custom query parameters
 
-Set the query params for SSE request. It will be passed to the server when the SSE connection is established next time.
+Add query parameters for SSE request. **It will be passed to the server when the SSE connection is established next time.**
 
 #### client.isConnected()
 
  - **Returns** _(Boolean)_
 
 Whether or not The SSE connection is connected to the server.
+
+#### client.addEvent(event, queryParams)
+
+ - `event` _(String, Required)_
+ - `params` _(Object, Optional)_
+
+Add an event to `events`. You can add query params too. Then **the client will restart** to make it take effect.
+
+#### client.removeEvent(event)
+
+ - `event` _(String, Required)_
+
+Remove an event from `events`. Then **the client will restart** to make it take effect.
+
+#### client.on(eventName, callback)
+
+Register a handler for the event
+
+**Event: 'message'**
+
+ - `callback` _(Function)_ an Object `data` will be passed to the callback function
+    - `data.event` _(String)_
+    - `data.message` _(String)_
+
+Handle received message from server for the registered events.
+
+```js
+client.on('message', (data) => {
+   // ...
+})
+```
+
+**Event: 'error'**
+
+ - `callback` _(Function)_ an `Error` will be passed to the callback function
+    - `error.message` _(String)_
+    - `error.status` _(Number)_ (default to -1) the http status received from server
+    - `error.reason` _(String)_ possible values: 'can't connect to server', 'http error'
+
+Handle error message. Including the http error as well as the `EventSource` error or close message.
+
+```js
+client.on('error', (err) => {
+   // ...
+})
+```
+
+**Event: 'connected'**
+
+Fired upon a connection.
+
+**Event: 'disconnect'**
+
+Fired upon a disconnection.
