@@ -1,6 +1,3 @@
-export type messageCb = (data: { event: string; message: string }) => void;
-export type errorCb = (err: Error) => void;
-
 export type IOptions = {
   reconnect?: boolean;
   backoffOptions?: any;
@@ -24,11 +21,11 @@ export default interface IClient {
 
   isConnected(): boolean;
 
-  setQueryParams(params: Object): any;
+  addQueryParams(params: Object): any;
 
-  onMessage(cb: messageCb): any;
+  addEvent(evnet: string, params?: Object): any;
 
-  onError(cb: errorCb): any;
+  removeEvent(evnet: string): any;
 }
 
 export class ClientError extends Error {
