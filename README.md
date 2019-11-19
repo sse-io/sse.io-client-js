@@ -40,7 +40,7 @@ const client = sseio.client('http://localhost', ['event']);
  - `events` _(Array[String], Required)_ the `EventSource` created by client will addEventListener to the events. Also, it will be add to query params to the SSE http request.
  - `options` _(Object, Optional)_
     - `reconnect` _(Boolean)_ (default to `true`) client will auto reconnect when can't connect to server, connections closed by server or receiving 5xx http status.
-    - `backoffOptions` _(Object)_ [implements from backo](https://github.com/mokesmokes/backo#options). Client will delay reconnecting when receiving 5xx http status or can't connect to server.
+    - `backoffOptions` _(Object)_ [implements from backo](https://github.com/mokesmokes/backo#options). Client will delay reconnect when receiving 5xx http status or can't connect to server.
  - **Returns** `Client`
 
 ### Client
@@ -82,13 +82,13 @@ Whether or not The SSE connection is connected to the server.
  - `event` _(String, Required)_
  - `params` _(Object, Optional)_
 
-Add an event to `events`. You can add query params too. Then **The client will restart** to make it take effect.
+Add an event to `events`. You can add query params too. Then **the client will restart** to make it take effect.
 
 #### client.removeEvent(event)
 
  - `event` _(String, Required)_
 
-Remove an event from `events`. Then **The client will restart** to make it take effect.
+Remove an event from `events`. Then **the client will restart** to make it take effect.
 
 #### client.on(eventName, callback)
 
