@@ -56,6 +56,10 @@ export default class Client extends EventEmitter implements IClient {
     );
   }
 
+  public getId(): string {
+    return this.clientId;
+  }
+
   public start(options?: ISSEOptions) {
     this.stopped = false;
     if (options) {
